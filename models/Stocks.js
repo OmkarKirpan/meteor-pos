@@ -16,6 +16,9 @@ Stocks.attachSchema(
         },
         productPrice: {
             type: String
+        },
+        quantity: {
+            type: String
         }
 
 
