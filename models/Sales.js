@@ -4,9 +4,9 @@
 // ...
 // Also creates files in server/publications
 
-Stocks = new Mongo.Collection('Stocks');
+Sales = new Mongo.Collection('Sales');
 
-Stocks.attachSchema(
+Sales.attachSchema(
     new SimpleSchema({
         productId: {
             type: String
