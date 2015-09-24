@@ -27,6 +27,13 @@ Template.stocks.helpers({
         } else {
             return Stocks.find();
         }
+    },
+    'stockExist' : function() {
+        var stocks = Stocks.find();
+        if(Session.get('stockSearchKey') != '') {
+            stocks = Stocks.find({$or: [{"productId": {$regex: Session.get('stockSearchKey')}}, {"productName": {$regex: Session.get('stockSearchKey')}}]});
+        }
+        return (stocks.count() > 0);
     }
 });
 
@@ -38,6 +45,13 @@ Template.sales.helpers({
         } else {
             return Sales.find();
         }
+    },
+    'saleExist' : function() {
+        var sales = Sales.find();
+        if(Session.get('saleSearchKey') != '') {
+            sales = Sales.find({$or: [{"productId": {$regex: Session.get('saleSearchKey')}}, {"productName": {$regex: Session.get('saleSearchKey')}}]});
+        }
+        return (sales.count() > 0);
     }
 });
 
@@ -75,6 +89,14 @@ Template.stocks.events({
                 if(event.target.id == "stockSearch") {
                     searchStocks();
                     return;
+                }
+                var stockInfo = Stocks.findOne({productId: $('#sProductId').val()});
+                if(event.target.id == "productId") {
+                    if(stockInfo) {
+                        alert('Stock already exist. Please update');
+                        $('#productId').val('');
+                        return;
+                    }
                 }
                 if(event.target.id == "productPrice") {
                     addStock();
@@ -177,8 +199,6 @@ function showTotalStockPrice() {
     if(Session.get('stockSearchKey') != '') {
         isSearch = true;
         stocks = Stocks.find({$or: [{"productId": {$regex: Session.get('stockSearchKey')}}, {"productName": {$regex: Session.get('stockSearchKey')}}]});
-    } else {
-        stocks = Stocks.find();
     }
     if(stocks.count() > 0) {
         var totalStockPrice = 0.0;
@@ -199,6 +219,11 @@ function showTotalStockPrice() {
 
 function showTotalSale() {
     var sales = Sales.find();
+    var isSearch = false;
+    if(Session.get('saleSearchKey') != '') {
+        isSearch = true;
+        sales = Sales.find({$or: [{"productId": {$regex: Session.get('saleSearchKey')}}, {"productName": {$regex: Session.get('saleSearchKey')}}]});
+    }
     if(sales.count() > 0) {
         var totalSale = 0.0;
         sales.forEach(function(sale){
@@ -206,9 +231,13 @@ function showTotalSale() {
         });
         console.log("**************************"+totalSale);
         $('#totalSale').html('<h4>Total : ' + totalSale.toString() + '</h4>');
-        Session.set('totalSale', totalSale);
+        if(!isSearch) {
+            Session.set('totalSale', totalSale);
+        }
     } else {
-        Session.set('totalSale', 0.0);
+        if(!isSearch) {
+            Session.set('totalSale', 0.0);
+        }
     }
 }
 
