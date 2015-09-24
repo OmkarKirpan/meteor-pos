@@ -1,5 +1,12 @@
 <template name="sales">
-	<div style="padding-left:10px;font-weight: bold;">Add sale product</div>
+	<div style="padding-left:10px;font-weight: bold; margin-right: 20px;">
+		<span>Add sale product</span>
+		<div align="right">
+			<input type="search" id="saleSearch" placeholder="Search">
+			<button id="searchSales">Search</button>
+			<button id="allSales">All</button>
+		</div>
+	</div>
 	<div style="display:table; padding: 20px; width:90%;">
 		<div style="display:table-cell; width:15%;"><input type="text" id="sProductId" placeholder="Product Id"></div>
 		<div style="display:table-cell; width:15%;"><input type="text" id="sProductName" placeholder="Product Name"></div>
@@ -17,7 +24,7 @@
 			<div style="display:table-cell; width:20%;"><label>Unit</label></div>
 			<div style="display:table-cell; width:20%;"><label>Product Price</label></div>
 		</div>
-		<div style="position: absolute; top: 250px; bottom:80px; overflow-y: scroll; width: 100%;">
+		<div style="position: absolute; top: 270px; bottom:80px; overflow-y: scroll; width: 100%;">
 			{{#each saleList}}
 			<div style="display:table; width: 80%; padding: 20px;">
 				<div style="display:table-cell; width:20%;">{{productId}}</div>
