@@ -6,11 +6,35 @@ Template.home.events({
         $('#salesContainer').css('display', 'none');
         $('#stocksContainer').css('display', 'block');
         $('#productId').focus();
+        var stocks = Stocks.find();
+        if(stocks.count() > 0) {
+            var totalStockPrice = 0.0;
+            stocks.forEach(function(stock){
+                totalStockPrice += parseFloat(stock.productPrice);
+            });
+            console.log("**************************"+totalStockPrice);
+            $('#totalStockPrice').html('<h4>Total : ' + totalStockPrice.toString() + '</h4>');
+            Session.set('totalStockPrice', totalStockPrice);
+        } else {
+            Session.set('totalStockPrice', 0.0);
+        }
     },
     'click #sales': function () {
         $('#stocksContainer').css('display', 'none'); 
         $('#salesContainer').css('display', 'block');
         $('#sProductId').focus();
+        var sales = Sales.find();
+        if(sales.count() > 0) {
+            var totalSale = 0.0;
+            sales.forEach(function(sale){
+                totalSale += parseFloat(sale.productPrice);
+            });
+            console.log("**************************"+totalSale);
+            $('#totalSale').html('<h4>Total : ' + totalSale.toString() + '</h4>');
+            Session.set('totalSale', totalSale);
+        } else {
+            Session.set('totalSale', 0.0);
+        }
     },
     'click #addStock': addStock,
     'click #addSale': addSale,
@@ -51,26 +75,18 @@ Template.home.events({
 
 Template.home.rendered = function() {
   $('#productId').focus();
-  var sales = Sales.find();
   var stocks = Stocks.find();
-  if(sales.count() > 0) {
-    var totalSale = 0.0;
-    var totalStockPrice = 0.0;
-      sales.forEach(function(sale){
-          totalSale += parseFloat(sale.productPrice);
-      });
-      console.log("**************************"+totalSale);
-      $('#totalSale').html('<h4>Total : ' + totalSale.toString() + '</h4>');
-      Session.set('totalSale', totalSale);
+  if(stocks.count() > 0) {
+      var totalStockPrice = 0.0;
       stocks.forEach(function(stock){
           totalStockPrice += parseFloat(stock.productPrice);
       });
       console.log("**************************"+totalStockPrice);
       $('#totalStockPrice').html('<h4>Total : ' + totalStockPrice.toString() + '</h4>');
       Session.set('totalStockPrice', totalStockPrice);
-  } else {
+    } else {
       Session.set('totalStockPrice', 0.0);
-  }
+    }
 };
 
 Template.stocks.helpers({
@@ -95,7 +111,6 @@ Template.home.helpers({
 });
 
 function addSale() {
-  console.log("*******************add");
     var saleInfo = {};
     saleInfo.productId = $('#sProductId').val();
     saleInfo.productName = $('#sProductName').val();
@@ -106,6 +121,7 @@ function addSale() {
     $('#totalSale').html('<h4> Total : ' + Session.get('totalSale').toString() + '</h4>');
     Session.set('totalSale', totalSale);
     Meteor.call('insertSaleData', saleInfo);
+    clearSaleFields();
 }
 
 function addStock() {
@@ -116,8 +132,25 @@ function addStock() {
     stockInfo.quantity = $('#quantity').val();
     stockInfo.unit = $('#unit').val();
     console.log(JSON.stringify(stockInfo));
-    var totalStockPrice = Session.get('totalStockPrice') + parseFloat(saleInfo.productPrice);
+    var totalStockPrice = Session.get('totalStockPrice') + parseFloat(stockInfo.productPrice);
     $('#totalStockPrice').html('<h4> Total : ' + Session.get('totalStockPrice').toString() + '</h4>');
     Session.set('totalStockPrice', totalStockPrice);
     Meteor.call('insertStockData', stockInfo);
+    clearStockFields();
+}
+
+function clearSaleFields() {
+    $('#sProductId').val('');
+    $('#sProductName').val('');
+    $('#sProductPrice').val('');
+    $('#sQuantity').val('');
+    $('#sUnit').val('');
+}
+
+function clearStockFields() {
+    $('#productId').val('');
+    $('#productName').val('');
+    $('#productPrice').val('');
+    $('#quantity').val('');
+    $('#unit').val('');
 }
