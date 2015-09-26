@@ -17,6 +17,9 @@ Sales.attachSchema(
         productPrice: {
             type: String
         },
+        soldPrice: {
+            type: String
+        },
         quantity: {
             type: String
         },

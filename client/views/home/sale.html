@@ -7,12 +7,13 @@
 			<button id="allSales">All</button>
 		</div>
 	</div>
-	<div style="display:table; padding: 20px; width:90%;">
+	<div style="display:table; padding: 20px; width:100%;">
 		<div style="display:table-cell; width:15%;"><input type="text" id="sProductId" placeholder="Product Id"></div>
 		<div style="display:table-cell; width:15%;"><input type="text" id="sProductName" placeholder="Product Name"></div>
 		<div style="display:table-cell; width:15%;"><input type="text" id="sQuantity" placeholder="Quantity"></div>
 		<div style="display:table-cell; width:15%;"><input type="text" id="sUnit" placeholder="Unit" readonly></div>
 		<div style="display:table-cell; width:15%;"><input type="text" id="sProductPrice" placeholder="Product Price"></div>
+		<div style="display:table-cell; width:15%;"><input type="text" id="sSoldPrice" placeholder="Sold Price"></div>
 		<div style="display:table-cell; width:15%;"><input type="button" id="addSale" value="Add"></div>
 	</div>
 	
@@ -32,10 +33,14 @@
 			<div style="display:table-cell; width:20%;">{{quantity}}</div>
 			<div style="display:table-cell; width:20%;">{{unit}}</div>
 			<div style="display:table-cell; width:20%;">{{productPrice}}</div>
+			<div style="display:table-cell; width:20%;">{{soldPrice}}</div>
 		</div>
 		{{/each}}
 	</div>
-	<div id="totalSale" style="position: absolute; bottom: 50px; text-align: center; width: 100%;"></div>
+	<div style="position: absolute; bottom: 50px; text-align: center; width: 100%;">
+		<label id="totalSoldPrice" style="display:inline-block;"></label>
+		<label id="saleProfit" style="display:inline-block;"></label>
+	</div>
 	{{else}}
 	<div align="center">No sales</div>
 	{{/if}}

@@ -10,11 +10,11 @@ Meteor.methods({
         Stocks.insert(stockInfo);      
     },
 
-    'deleteStockData': function (selectedStock) {
-        
+    'deleteStockData': function (selectQuery) {
+        Stocks.remove(selectQuery);
     },
 
-    'updateStockData': function (selectedStock, stockInfo) {
-        Stocks.update(selectedStock, {$set: stockInfo});
+    'updateStockData': function (selectQuery, stockInfo) {
+        Stocks.update(selectQuery, {$set: stockInfo});
     }
 });

@@ -90,11 +90,20 @@ Template.home.events({
     'click #addStock': addStock,
     'click #addSale': addSale,
     'click #addProduct': addProduct,
-    'click #newBilling': newBilling
+    'click #newBilling': newBilling,
+    'click .update-stock-link': function(event) {
+        updateStockFields(event);
+    },
+    'click .delete-stock-link': function(event) {
+        deleteStock(event);
+    },
+    'click .update-btn': function(event) {
+        updateStock(event);
+    }
 });
 
 Template.stocks.events({
-    'keydown input': function (event) {
+    'keydown input[type="text"]': function (event) {
         if(event.which === 13) {
             console.log($('#'+event.target.id).val());
             if($('#'+event.target.id).val() == '') {
@@ -108,10 +117,14 @@ Template.stocks.events({
                 var stockInfo = Stocks.findOne({productId: {$regex: $('#productId').val()}});
                 if(event.target.id == "productId") {
                     if(stockInfo) {
-                        alert('Stock already exist. Please update');
+                        alert('Product already exist in stock. Please update');
                         $('#productId').val('');
                         return;
                     }
+                }
+                if(event.target.id == "quantity") {
+                    $('#productPrice').focus();
+                    return;
                 }
                 if(event.target.id == "productPrice") {
                     addStock();
@@ -120,6 +133,34 @@ Template.stocks.events({
                 $(':input:eq(' + ($(':input').index(event.target) + 1) + ')').focus();
             }
         }
+    },
+    'keydown input[type="number"]': function (event) {
+        console.log("************"+event.which+"....."+String.fromCharCode(event.which));
+        if (isNaN(String.fromCharCode(event.which)) && event.which != 13 && event.which != 8 && event.which != 190) {
+            return false;
+        }
+        if(event.which === 13) {
+            console.log($('#'+event.target.id).val());
+            if($('#'+event.target.id).val() == '') {
+                alert('Enter value');
+                event.target.focus();
+            } else {
+                var stockInfo = Stocks.findOne({productId: {$regex: $('#productId').val()}});
+                
+                if(event.target.id == "quantity") {
+                    $('#productPrice').focus();
+                    return;
+                }
+                if(event.target.id == "productPrice") {
+                    addStock();
+                    return;
+                }
+                $(':input:eq(' + ($(':input').index(event.target) + 1) + ')').focus();
+            }
+        }
+    },
+    'change #selectUnit': function(event) {
+        $('#productPrice').focus();
     }
 });
 
@@ -142,18 +183,12 @@ Template.sales.events({
                     $('#sQuantity').focus();
                     return;
                 } else if(event.target.id == "sQuantity") {
-                    if(stockInfo.quantity == 0) {
-                        alert('No stock');
-                    } else if(parseFloat($('#sQuantity').val()) > parseFloat(stockInfo.quantity)) {
-                        alert('Available quantity is only '+stockInfo.quantity);
-                    } else {
-                        var price = (parseFloat(stockInfo.productPrice) / parseFloat(stockInfo.quantity)) * parseFloat($('#sQuantity').val());
-                        $('#sProductPrice').val(price.toString());
-                        $('#sUnit').val(stockInfo.unit);
-                        $('#sProductPrice').focus();
-                        return;
-                    }
-                } else if(event.target.id == "sProductPrice") {
+                    var price = (parseFloat(stockInfo.productPrice) / parseFloat(stockInfo.quantity)) * parseFloat($('#sQuantity').val());
+                    $('#sProductPrice').val(price.toString());
+                    $('#sUnit').val(stockInfo.unit);
+                    $('#sProductPrice').focus();
+                    return;
+                } else if(event.target.id == "sSoldPrice") {
                     addSale();
                     return;
                 }
@@ -174,13 +209,15 @@ Template.billing.events({
             } else {
                 var stockInfo = Stocks.findOne({productId: {$regex: $('#bProductId').val()}});
                 if(event.target.id == "bProductId") {
+                    if(!stockInfo || (stockInfo && stockInfo.quantity == 0)) {
+                        alert('Stock not available');
+                        return;
+                    }
                     $('#bProductName').val(stockInfo.productName);
                     $('#bQuantity').focus();
                     return;
                 } else if(event.target.id == "bQuantity") {
-                    if(stockInfo.quantity == 0) {
-                        alert('No stock');
-                    } else if(parseFloat($('#bQuantity').val()) > parseFloat(stockInfo.quantity)) {
+                    if(parseFloat($('#bQuantity').val()) > parseFloat(stockInfo.quantity)) {
                         alert('Available quantity is only '+stockInfo.quantity);
                     } else {
                         var price = (parseFloat(stockInfo.productPrice) / parseFloat(stockInfo.quantity)) * parseFloat($('#bQuantity').val());
@@ -201,26 +238,48 @@ Template.billing.events({
 });
 
 function addSale() {
+    if($('#sProductId').val() == '' || $('#sProductName').val() == '' || $('#sProductPrice').val() == '' || $('#sSoldPrice').val() == '' || $('#sQuantity').val()) {
+        alert('Enter value');
+        return;
+    }
+    var stockInfo = Stocks.findOne({productId: {$regex: $('#productId').val()}});
+    if(!stockInfo) {
+        alert('Product is not available');
+        return;
+    }
     var saleInfo = {};
     saleInfo.productId = $('#sProductId').val();
     saleInfo.productName = $('#sProductName').val();
     saleInfo.productPrice = $('#sProductPrice').val();
+    saleInfo.soldPrice = $('#sSoldPrice').val();
     saleInfo.quantity = $('#sQuantity').val();
     saleInfo.unit = $('#sUnit').val();
     var totalSale = Session.get('totalSale') + parseFloat(saleInfo.productPrice);
-    $('#totalSale').html('<h4> Total : ' + Session.get('totalSale').toString() + '</h4>');
+    var totalSoldPrice = Session.get('totalSoldPrice') + parseFloat(saleInfo.soldPrice);
+    $('#totalSoldPrice').text(Session.get('totalSoldPrice').toString());
     Session.set('totalSale', totalSale);
+    Session.set('totalSoldPrice', totalSoldPrice);
     Meteor.call('insertSaleData', saleInfo);
     clearSaleFields();
 }
 
 function addStock() {
+    if($('#productId').val() == '' || $('#productName').val() == '' || $('#productPrice').val() == '' || $('#puantity').val()) {
+        alert('Enter value');
+        return;
+    }
+    var stockInfo = Stocks.findOne({productId: {$regex: $('#productId').val()}});
+    if(stockInfo) {
+        alert('Product already exist in stock. Please update');
+        $('#productId').val('');
+        return;
+    }
     var stockInfo = {};
     stockInfo.productId = $('#productId').val();
     stockInfo.productName = $('#productName').val();
     stockInfo.productPrice = $('#productPrice').val();
     stockInfo.quantity = $('#quantity').val();
-    stockInfo.unit = $('#unit').val();
+    stockInfo.unit = {"text": $("#selectUnit option:selected").text(), "value": $("#selectUnit option:selected").val()};
     console.log(JSON.stringify(stockInfo));
     var totalStockPrice = Session.get('totalStockPrice') + parseFloat(stockInfo.productPrice);
     $('#totalStockPrice').html('<h4> Total : ' + Session.get('totalStockPrice').toString() + '</h4>');
@@ -230,6 +289,10 @@ function addStock() {
 }
 
 function addProduct() {
+    if($('#bProductId').val() == '' || $('#bProductName').val() == '' || $('#bProductPrice').val() == '' || $('#bQuantity').val()) {
+        alert('Enter value');
+        return;
+    }
     var productInfo = {};
     productInfo.productId = $('#bProductId').val();
     productInfo.productName = $('#bProductName').val();
@@ -248,6 +311,7 @@ function clearSaleFields() {
     $('#sProductId').val('');
     $('#sProductName').val('');
     $('#sProductPrice').val('');
+    $('#sSoldPrice').val('');
     $('#sQuantity').val('');
     $('#sUnit').val('');
     $('#sProductId').focus();
@@ -283,7 +347,6 @@ function showTotalStockPrice() {
         stocks.forEach(function(stock){
             totalStockPrice += parseFloat(stock.productPrice);
         });
-        console.log("**************************"+totalStockPrice);
         $('#totalStockPrice').html('<h4>Total : ' + totalStockPrice.toString() + '</h4>');
         if(!isSearch) {
             Session.set('totalStockPrice', totalStockPrice);
@@ -304,17 +367,22 @@ function showTotalSale() {
     }
     if(sales.count() > 0) {
         var totalSale = 0.0;
+        var totalSoldPrice = 0.0;
         sales.forEach(function(sale){
             totalSale += parseFloat(sale.productPrice);
+            totalSoldPrice += parseFloat(sale.soldPrice);
         });
-        console.log("**************************"+totalSale);
-        $('#totalSale').html('<h4>Total : ' + totalSale.toString() + '</h4>');
+        var profit = totalSoldPrice - totalSale;
+        $('#totalSoldPrice').text(totalSoldPrice.toString());
+        $('#profit').text(profit.toString());
         if(!isSearch) {
             Session.set('totalSale', totalSale);
+            Session.set('totalSoldPrice', totalSoldPrice);
         }
     } else {
         if(!isSearch) {
             Session.set('totalSale', 0.0);
+            Session.set('totalSoldPrice', 0.0);
         }
     }
 }
@@ -390,4 +458,27 @@ function newBilling(){
     Session.set('productList',[]);
     showTotalProductPrice();
     Router.go('/');
+}
+
+function updateStockFields(event) {
+    var id = event.target.id.toString().replace('updateStockFields','');
+    $('#stockTable'+id).css("display", "none");
+    $('#stockUpdateTable'+id).css("display", "table");
+}
+
+function updateStock(event) {
+    var id = event.target.id.toString().replace('updateStock','');
+    var updateStockInfo = {};
+    updateStockInfo.quantity = $('#quantity'+id).val();
+    updateStockInfo.unit = {"text": $('#selectUnit'+id+' option:selected').text(), "value": $('#selectUnit'+id+' option:selected').val()};
+    updateStockInfo.productPrice = $('#productPrice'+id).val();
+    Meteor.call('updateStockData', {productId:{$regex: id}}, updateStockInfo);
+    $('#stockTable'+id).css("display", "table");
+    $('#stockUpdateTable'+id).css("display", "none");
+    //Router.go('/');
+}
+
+function deleteStock(event) {
+    var id = event.target.id.toString().replace('deleteStock','');
+    Meteor.call('deleteStockData', {productId: {$regex: id}});
 }

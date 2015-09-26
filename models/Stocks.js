@@ -21,6 +21,12 @@ Stocks.attachSchema(
             type: String
         },
         unit: {
+            type: Object
+        },
+        'unit.text': {
+            type: String
+        },
+        'unit.value': {
             type: String
         }
     })

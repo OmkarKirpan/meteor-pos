@@ -17,3 +17,19 @@
 	padding: 10px; 
 	cursor: pointer;
 }
+
+.update-stock-link {
+	text-decoration: underline; 
+	display: inline-block; 
+	cursor: pointer;
+}
+
+.delete-stock-link {
+	text-decoration: underline; 
+	display: inline-block; 
+	cursor: pointer;
+}
+
+.update-btn {
+	
+}
