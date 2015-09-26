@@ -1,6 +1,6 @@
 <template name="home">
 	<div align="right" style="margin-right: 20px;">
-		<div id="stocks" class= "button">Stocks Management</div>
+		<div id="stocks" class= "button-selection">Stocks Management</div>
 		<div id="sales" class= "button">Sales Management</div>
 		<div id="billing" class= "button">Billing</div>
 	</div>
@@ -11,6 +11,9 @@
 		</div>
 		<div id="salesContainer" style="display:none;">
 			{{> sales}}
+		</div>
+		<div id="billingContainer" style="display:none;">
+			{{> billing}}
 		</div>
 	</div>
 	

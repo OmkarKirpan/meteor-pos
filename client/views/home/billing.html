@@ -1,0 +1,35 @@
+<template name="billing">
+	<div style="padding-left:10px;font-weight: bold; margin-right: 20px;">
+		<span>Add product</span>
+		<div align="right"><button id="newBilling">New</button></div>
+	</div>
+	<div style="display:table; padding: 20px; width:90%;">
+		<div style="display:table-cell; width:15%;"><input type="text" id="bProductId" placeholder="Product Id"></div>
+		<div style="display:table-cell; width:15%;"><input type="text" id="bProductName" placeholder="Product Name"></div>
+		<div style="display:table-cell; width:15%;"><input type="text" id="bQuantity" placeholder="Quantity"></div>
+		<div style="display:table-cell; width:15%;"><input type="text" id="bUnit" placeholder="Unit"></div>
+		<div style="display:table-cell; width:15%;"><input type="text" id="bProductPrice" placeholder="Product Price"></div>
+		<div style="display:table-cell; width:15%;"><input type="button" id="addProduct" value="Add"></div>
+	</div>
+	<div style="display:table; width: 80%; padding: 20px;">
+		<div style="display:table-cell; width:20%;"><label>Product Id</label></div>
+		<div style="display:table-cell; width:20%;"><label>Product Name</label></div>
+		<div style="display:table-cell; width:20%;"><label>Quantity</label></div>
+		<div style="display:table-cell; width:20%;"><label>Unit</label></div>
+		<div style="display:table-cell; width:20%;"><label>Product Price</label></div>
+	</div>
+	<div style="position: absolute; top: 270px; bottom:80px; overflow-y: scroll; width: 100%;">
+		{{#each productList}}
+		<div style="display:table; width: 80%; padding: 20px;">
+			<div style="display:table-cell; width:20%;">{{productId}}</div>
+			<div style="display:table-cell; width:20%;">{{productName}}</div>
+			<div style="display:table-cell; width:20%;">{{quantity}}</div>
+			<div style="display:table-cell; width:20%;">{{unit}}</div>
+			<div style="display:table-cell; width:20%;">{{productPrice}}</div>
+		</div>
+		{{/each}}
+	</div>
+	<div id="totalProductPrice" style="position: absolute; bottom: 50px; text-align: center; width: 100%;"></div>
+	
+	
+</template>

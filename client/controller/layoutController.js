@@ -1,8 +1,11 @@
 Meteor.subscribe('Stocks');
 Meteor.subscribe('Sales');
 
+productList = [];
+
 Template.home.rendered = function() {
-    console.log("*************************");
+    console.log("**********rendered************");
+    console.log("*************************"+productList.length);
     $('#productId').focus();
 
     $('#stockSearch').val('');
@@ -10,16 +13,26 @@ Template.home.rendered = function() {
 
     Session.set('stockSearchKey','');
     Session.set('saleSearchKey','');
-
-    if(Session.get('type') == "sales") {
+    console.log("*************************"+Session.get('type'));
+    if(Session.get('type') == "billing") {
+        showBillingContainer();
+    } else if(Session.get('type') == "sales") {
         showSaleContainer();
     } else {
+        console.log("**********else***************");
         showStockContainer();
     }
     Session.set('type', '');
 };
 
 Template.stocks.helpers({
+    'stockExist' : function() {
+        var stocks = Stocks.find();
+        if(Session.get('stockSearchKey') != '') {
+            stocks = Stocks.find({$or: [{"productId": {$regex: Session.get('stockSearchKey')}}, {"productName": {$regex: Session.get('stockSearchKey')}}]});
+        }
+        return (stocks.count() > 0);
+    },
     'stockList': function () {
         showTotalStockPrice();
         if(Session.get('stockSearchKey') != '') {
@@ -27,17 +40,17 @@ Template.stocks.helpers({
         } else {
             return Stocks.find();
         }
-    },
-    'stockExist' : function() {
-        var stocks = Stocks.find();
-        if(Session.get('stockSearchKey') != '') {
-            stocks = Stocks.find({$or: [{"productId": {$regex: Session.get('stockSearchKey')}}, {"productName": {$regex: Session.get('stockSearchKey')}}]});
-        }
-        return (stocks.count() > 0);
     }
 });
 
 Template.sales.helpers({
+    'saleExist' : function() {
+        var sales = Sales.find();
+        if(Session.get('saleSearchKey') != '') {
+            sales = Sales.find({$or: [{"productId": {$regex: Session.get('saleSearchKey')}}, {"productName": {$regex: Session.get('saleSearchKey')}}]});
+        }
+        return (sales.count() > 0);
+    },
     'saleList': function () {
         showTotalSale();
         if(Session.get('saleSearchKey') != '') {
@@ -45,19 +58,19 @@ Template.sales.helpers({
         } else {
             return Sales.find();
         }
-    },
-    'saleExist' : function() {
-        var sales = Sales.find();
-        if(Session.get('saleSearchKey') != '') {
-            sales = Sales.find({$or: [{"productId": {$regex: Session.get('saleSearchKey')}}, {"productName": {$regex: Session.get('saleSearchKey')}}]});
-        }
-        return (sales.count() > 0);
+    }
+});
+
+Template.billing.helpers({
+    productList : function() {
+        return Session.get('productList');
     }
 });
 
 Template.home.events({
     'click #stocks': showStockContainer,
     'click #sales': showSaleContainer,
+    'click #billing': showBillingContainer,
     'click #allStocks': function () {
         Session.set('stockSearchKey', '');
         Session.set('type', 'stocks');
@@ -75,7 +88,9 @@ Template.home.events({
         searchSales();
     },
     'click #addStock': addStock,
-    'click #addSale': addSale
+    'click #addSale': addSale,
+    'click #addProduct': addProduct,
+    'click #newBilling': newBilling
 });
 
 Template.stocks.events({
@@ -90,7 +105,7 @@ Template.stocks.events({
                     searchStocks();
                     return;
                 }
-                var stockInfo = Stocks.findOne({productId: $('#sProductId').val()});
+                var stockInfo = Stocks.findOne({productId: {$regex: $('#productId').val()}});
                 if(event.target.id == "productId") {
                     if(stockInfo) {
                         alert('Stock already exist. Please update');
@@ -120,7 +135,8 @@ Template.sales.events({
                     searchSales();
                     return;
                 }
-                var stockInfo = Stocks.findOne({productId: $('#sProductId').val()});
+                //var stockInfo = Stocks.findOne({productId: $('#sProductId').val()});
+                var stockInfo = Stocks.findOne({productId: {$regex: $('#sProductId').val()}})
                 if(event.target.id == "sProductId") {
                     $('#sProductName').val(stockInfo.productName);
                     $('#sQuantity').focus();
@@ -139,6 +155,42 @@ Template.sales.events({
                     }
                 } else if(event.target.id == "sProductPrice") {
                     addSale();
+                    return;
+                }
+                $(':input:eq(' + ($(':input').index(event.target) + 1) + ')').focus();
+                
+            }
+        }
+    }
+});
+
+Template.billing.events({
+    'keydown input': function (event) {
+        if(event.which === 13) {
+            console.log($('#'+event.target.id).val());
+            if($('#'+event.target.id).val() == '') {
+                alert('Enter value');
+                event.target.focus();
+            } else {
+                var stockInfo = Stocks.findOne({productId: {$regex: $('#bProductId').val()}});
+                if(event.target.id == "bProductId") {
+                    $('#bProductName').val(stockInfo.productName);
+                    $('#bQuantity').focus();
+                    return;
+                } else if(event.target.id == "bQuantity") {
+                    if(stockInfo.quantity == 0) {
+                        alert('No stock');
+                    } else if(parseFloat($('#bQuantity').val()) > parseFloat(stockInfo.quantity)) {
+                        alert('Available quantity is only '+stockInfo.quantity);
+                    } else {
+                        var price = (parseFloat(stockInfo.productPrice) / parseFloat(stockInfo.quantity)) * parseFloat($('#bQuantity').val());
+                        $('#bProductPrice').val(price.toString());
+                        $('#bUnit').val(stockInfo.unit);
+                        $('#bProductPrice').focus();
+                        return;
+                    }
+                } else if(event.target.id == "bProductPrice") {
+                    addProduct();
                     return;
                 }
                 $(':input:eq(' + ($(':input').index(event.target) + 1) + ')').focus();
@@ -177,12 +229,28 @@ function addStock() {
     clearStockFields();
 }
 
+function addProduct() {
+    var productInfo = {};
+    productInfo.productId = $('#bProductId').val();
+    productInfo.productName = $('#bProductName').val();
+    productInfo.productPrice = $('#bProductPrice').val();
+    productInfo.quantity = $('#bQuantity').val();
+    productInfo.unit = $('#bUnit').val();
+    productList.push(productInfo);
+    Session.set('productList', productList);
+    Session.set('type', 'billing');
+    showTotalProductPrice();
+    clearProductFields();
+    Router.go('/');
+}
+
 function clearSaleFields() {
     $('#sProductId').val('');
     $('#sProductName').val('');
     $('#sProductPrice').val('');
     $('#sQuantity').val('');
     $('#sUnit').val('');
+    $('#sProductId').focus();
 }
 
 function clearStockFields() {
@@ -191,6 +259,16 @@ function clearStockFields() {
     $('#productPrice').val('');
     $('#quantity').val('');
     $('#unit').val('');
+    $('#productId').focus();
+}
+
+function clearProductFields() {
+    $('#bProductId').val('');
+    $('#bProductName').val('');
+    $('#bProductPrice').val('');
+    $('#bQuantity').val('');
+    $('#bUnit').val('');
+    $('#bProductId').focus();
 }
 
 function showTotalStockPrice() {
@@ -241,6 +319,15 @@ function showTotalSale() {
     }
 }
 
+function showTotalProductPrice() {
+    var totalProductPrice = 0.0;
+    var pList = Session.get('productList');
+    for(var i = 0; i < pList.length; i++) {
+        totalProductPrice += parseFloat(pList[i].productPrice);
+    }
+    $('#totalProductPrice').html('<h4>Total : ' + totalProductPrice.toString() + '</h4>');
+}
+
 function searchStocks() {
     Session.set('stockSearchKey', $('#stockSearch').val());
     Session.set('type', 'stocks');
@@ -254,23 +341,53 @@ function searchSales() {
 }
 
 function showStockContainer() {
+    $('#billingContainer').css('display', 'none');
     $('#salesContainer').css('display', 'none');
     $('#stocksContainer').css('display', 'block');
     $('#stocks').removeClass('button');
     $('#stocks').addClass('button-selection');
     $('#sales').removeClass('button-selection');
     $('#sales').addClass('button');
+    $('#billing').addClass('button');
+    $('#billing').removeClass('button-selection');
     $('#productId').focus();
+    Session.set('type', 'stocks');
     showTotalStockPrice();
 }
 
 function showSaleContainer() {
+    $('#billingContainer').css('display', 'none');
     $('#stocksContainer').css('display', 'none'); 
     $('#salesContainer').css('display', 'block');
     $('#sales').removeClass('button');
     $('#sales').addClass('button-selection');
     $('#stocks').removeClass('button-selection');
     $('#stocks').addClass('button');
+    $('#billing').addClass('button');
+    $('#billing').removeClass('button-selection');
     $('#sProductId').focus();
+    Session.set('type', 'sales');
     showTotalSale();
+}
+
+function showBillingContainer() {
+    $('#stocksContainer').css('display', 'none'); 
+    $('#salesContainer').css('display', 'none');
+    $('#billingContainer').css('display', 'block');
+    $('#billing').removeClass('button');
+    $('#billing').addClass('button-selection');
+    $('#sales').removeClass('button-selection');
+    $('#sales').addClass('button');
+    $('#stocks').removeClass('button-selection');
+    $('#stocks').addClass('button');
+    $('#bProductId').focus();
+    Session.set('type', 'billing');
+}
+
+function newBilling(){
+    clearProductFields();
+    productList = [];
+    Session.set('productList',[]);
+    showTotalProductPrice();
+    Router.go('/');
 }
