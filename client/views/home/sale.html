@@ -11,7 +11,12 @@
 		<div style="display:table-cell; width:15%;"><input type="text" id="sProductId" placeholder="Product Id"></div>
 		<div style="display:table-cell; width:15%;"><input type="text" id="sProductName" placeholder="Product Name"></div>
 		<div style="display:table-cell; width:15%;"><input type="text" id="sQuantity" placeholder="Quantity"></div>
-		<div style="display:table-cell; width:15%;"><input type="text" id="sUnit" placeholder="Unit" readonly></div>
+		<div style="display:table-cell; width:15%;">
+			<select id="sSelectUnit">
+  				<option value="mg">மி.கி(mg)</option>
+  				<option value="kg">கி.கி(kg)</option>
+			</select>
+		</div>
 		<div style="display:table-cell; width:15%;"><input type="text" id="sProductPrice" placeholder="Product Price"></div>
 		<div style="display:table-cell; width:15%;"><input type="text" id="sSoldPrice" placeholder="Sold Price"></div>
 		<div style="display:table-cell; width:15%;"><input type="button" id="addSale" value="Add"></div>
@@ -24,6 +29,7 @@
 		<div style="display:table-cell; width:20%;"><label>Quantity</label></div>
 		<div style="display:table-cell; width:20%;"><label>Unit</label></div>
 		<div style="display:table-cell; width:20%;"><label>Product Price</label></div>
+		<div style="display:table-cell; width:20%;"><label>Sold Price</label></div>
 	</div>
 	<div style="position: absolute; top: 270px; bottom:80px; overflow-y: scroll; width: 100%;">
 		{{#each saleList}}
@@ -31,15 +37,15 @@
 			<div style="display:table-cell; width:20%;">{{productId}}</div>
 			<div style="display:table-cell; width:20%;">{{productName}}</div>
 			<div style="display:table-cell; width:20%;">{{quantity}}</div>
-			<div style="display:table-cell; width:20%;">{{unit}}</div>
+			<div style="display:table-cell; width:20%;">{{unit.text}}</div>
 			<div style="display:table-cell; width:20%;">{{productPrice}}</div>
 			<div style="display:table-cell; width:20%;">{{soldPrice}}</div>
 		</div>
 		{{/each}}
 	</div>
 	<div style="position: absolute; bottom: 50px; text-align: center; width: 100%;">
-		<label id="totalSoldPrice" style="display:inline-block;"></label>
-		<label id="saleProfit" style="display:inline-block;"></label>
+		<label id="totalSoldPrice" style="display:inline-block; padding-right: 10px;"></label>
+		<label id="saleProfit" style="display:inline-block; padding-left: 10px;"></label>
 	</div>
 	{{else}}
 	<div align="center">No sales</div>

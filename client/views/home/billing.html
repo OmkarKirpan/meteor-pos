@@ -7,7 +7,12 @@
 		<div style="display:table-cell; width:15%;"><input type="text" id="bProductId" placeholder="Product Id"></div>
 		<div style="display:table-cell; width:15%;"><input type="text" id="bProductName" placeholder="Product Name"></div>
 		<div style="display:table-cell; width:15%;"><input type="text" id="bQuantity" placeholder="Quantity"></div>
-		<div style="display:table-cell; width:15%;"><input type="text" id="bUnit" placeholder="Unit"></div>
+		<div style="display:table-cell; width:15%;">
+			<select id="bSelectUnit">
+  				<option value="mg">மி.கி(mg)</option>
+  				<option value="kg">கி.கி(kg)</option>
+			</select>
+		</div>
 		<div style="display:table-cell; width:15%;"><input type="text" id="bProductPrice" placeholder="Product Price"></div>
 		<div style="display:table-cell; width:15%;"><input type="button" id="addProduct" value="Add"></div>
 	</div>
@@ -24,8 +29,8 @@
 			<div style="display:table-cell; width:20%;">{{productId}}</div>
 			<div style="display:table-cell; width:20%;">{{productName}}</div>
 			<div style="display:table-cell; width:20%;">{{quantity}}</div>
-			<div style="display:table-cell; width:20%;">{{unit}}</div>
-			<div style="display:table-cell; width:20%;">{{productPrice}}</div>
+			<div style="display:table-cell; width:20%;">{{unit.text}}</div>
+			<div style="display:table-cell; width:20%;">{{soldPrice}}</div>
 		</div>
 		{{/each}}
 	</div>
